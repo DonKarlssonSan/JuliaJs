@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+
+<html>
+<h1>Click to zoom</h1>
+Re:
+<input type="text" id="re" value="-0.835" />
+Im:
+<input type="text" id="im" value="-0.2321"/>
+<button id="redrawButton">Redraw</button>
+<canvas id="canvas" width="640" height="480" style="display: flex;">
+</canvas>
+<script>
+(function() {
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    var width = canvas.width;
+    var height = canvas.height;
+
+    var id = ctx.createImageData(width, height);
+    var d  = id.data;
+    
+    putPixel = function (x, y, r, g, b, a) {
+        var index = (x + y * width) * 4;
+        d[index+0] = r;
+        d[index+1] = g;
+        d[index+2] = b;
+        d[index+3] = a;
+    }
+    
+    function zoom(event) {
+       var xPos = event.x;
+        var yPos = event.y;
+
+        xPos -= canvas.offsetLeft;
+        yPos -= canvas.offsetTop;
+
+        var xSize = (xmax-xmin) * 0.7;
+        var ySize = (ymax-ymin) * 0.7;
+        
+        xmin = (xmin + xPos * xDelta) - xSize / 2;  
+        xmax = (xmin + xPos * xDelta) + xSize / 2;
+        ymin = (ymin + yPos * yDelta) - ySize / 2;
+        ymax = (ymin + yPos * yDelta) + ySize / 2;
+        
+        drawJulia();
+     }
+    
+    canvas.addEventListener("mousedown", zoom, false);
+        
+    var xmin = -1.5;
+    var ymin = -1.15;
+    var xmax = 1.5;
+    var ymax = 1.15;
+    var xDelta;
+    var yDelta;
+    var zoom = 1;
+    drawJulia = function() {
+        xDelta = (xmax-xmin) / width;
+        yDelta = (ymax-ymin) / height;
+ 
+        var x;
+        var y;
+        var iteration;
+        var max_iteration = 256;
+        var x0 = Number(document.getElementById("re").value);
+        var y0 = Number(document.getElementById("im").value);
+        for (var Px = 0; Px < width; Px++) {
+            for (var Py = 0; Py < height; Py++) {
+                x = xmin + Px * xDelta;
+                y = ymin + Py * yDelta;
+
+                iteration = 0;
+                while ( x*x + y*y < 4 && iteration < max_iteration )
+                {
+                    xtemp = x*x - y*y + x0;
+                    y = 2*x*y + y0;
+                    x = xtemp;
+                    iteration = iteration + 1;
+                }
+                putPixel(Px, Py, 256-iteration, 256-iteration, 256-iteration, 255);
+            }
+        }
+        ctx.putImageData(id, 0, 0);
+        console.log("xmin: " + xmin + " xmax: " + xmax + " ymin: " + ymin + " ymax: " + ymax);
+    }
+    document.getElementById("redrawButton").addEventListener("click", drawJulia, false);
+    
+    drawJulia();
+})();
+</script>
+</html>
