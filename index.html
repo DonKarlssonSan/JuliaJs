@@ -7,10 +7,72 @@ Re:
 Im:
 <input type="text" id="im" value="-0.2321"/>
 <button id="redrawButton">Redraw</button>
+<div id="presetButtons"></div>
 <canvas id="canvas" width="640" height="480" style="display: flex;">
 </canvas>
 <script>
 (function() {
+    var presets = [ { 
+        name: "z^2 + (-0.70176-0.3842i)",
+        re: -0.70176,
+        im: -0.3842,
+        fz: "z2" 
+      } , {
+        name: "z^2 + (-0.8+0.156i)",
+        re: -0.8,
+        im: 0.156,
+        fz: "z2" 
+      } , {
+        name: "z^2 + (-0.4+0.6i)",
+        re: -0.4,
+        im: 0.6,
+        fz: "z2" 
+      } , {
+        name: "z^2 + 0.279",
+        re: 0.279,
+        im: 0,
+        fz: "z2" 
+      } , {
+        name: "z^3 + 0.4",
+        re: 0.4,
+        im: 0,
+        fz: "z3" 
+      } 
+    ];
+    
+    findPresetByName = function(presetsArray, name) {
+        for(var i = 0; i < presetsArray.length; i++) {
+            if(presetsArray[i].name === name) {
+                return presetsArray[i];
+            }
+        }
+        // Not found
+        return null;
+    };
+    var buttonsDiv = document.getElementById("presetButtons");    
+    presets.forEach(function(item){
+        var  button = document.createElement("button");
+        button.innerHTML = item.name;
+        // This will cause a re-flow of the page but we don't care
+        buttonsDiv.appendChild(button);    
+    });
+    
+    presetClicked = function(event) {
+        event = event || window.event;
+        var target = event.target || event.srcElement;
+        if(target.nodeName === "BUTTON") {
+            var preset = findPresetByName(presets, target.innerHTML);
+            if(preset) {
+                document.getElementById("re").value = preset.re;
+                document.getElementById("im").value = preset.im;
+                fz = preset.fz;
+                resetZoom();
+                drawJulia();
+            }
+        }
+    };
+    buttonsDiv.addEventListener("click", presetClicked, false);
+ 
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
     var width = canvas.width;
@@ -46,14 +108,22 @@ Im:
      }
     
     canvas.addEventListener("mousedown", zoom, false);
-        
-    var xmin = -1.5;
-    var ymin = -1.15;
-    var xmax = 1.5;
-    var ymax = 1.15;
+ 
+    resetZoom = function () {    
+        xmin = -1.5;
+        ymin = -1.15;
+        xmax = 1.5;
+        ymax = 1.15;
+    }
+ 
+
+   var xmin;
+    var ymin;
+    var xmax;
+    var ymax;
     var xDelta;
     var yDelta;
-    var zoom = 1;
+    var fz = "z2";
     drawJulia = function() {
         xDelta = (xmax-xmin) / width;
         yDelta = (ymax-ymin) / height;
@@ -70,10 +140,18 @@ Im:
                 y = ymin + Py * yDelta;
 
                 iteration = 0;
-                while ( x*x + y*y < 4 && iteration < max_iteration )
-                {
-                    xtemp = x*x - y*y + x0;
-                    y = 2*x*y + y0;
+                while ( x*x + y*y < 4 && iteration < max_iteration ) {
+                    // Multiplication of complex numbers:
+                    // (a+bi) (c+di) = (ac-bd) + (bc+ad)i
+                    // c^2 = (x+yi) (x+yi) = (xx-yy) + (yx+yx)i = (xx-yy) + (2xy)i
+                    // c^3 = (x+yi) ((xx-yy) + (2xy)i) = (x(xx-yy)-y2xy) +(y(xx-yy)+x2xy)i
+                    if(fz === "z2") {
+                        xtemp = x*x - y*y + x0;
+                        y = 2*x*y + y0;
+                    } else if(fz === "z3") {
+                        xtemp = x*(x*x-y*y)-y*2*x*y + x0;
+                        y = y*(x*x-y*y)+x*2*x*y + y0;
+                    } 
                     x = xtemp;
                     iteration = iteration + 1;
                 }
@@ -84,7 +162,7 @@ Im:
         console.log("xmin: " + xmin + " xmax: " + xmax + " ymin: " + ymin + " ymax: " + ymax);
     }
     document.getElementById("redrawButton").addEventListener("click", drawJulia, false);
-    
+    resetZoom();
     drawJulia();
 })();
 </script>
