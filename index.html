@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 
 <html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Julia Fractal</title>
+</head>
+<body>
 <h1>Click to zoom</h1>
 Re:
 <input type="text" id="re" value="-0.835" />
@@ -9,7 +14,8 @@ Im:
 <button id="redrawButton">Redraw</button>
 <div id="presetButtons"></div>
 <canvas id="canvas" width="640" height="480" style="display: flex;">
-</canvas>
+</canvas><br />
+<a href="https://github.com/DonKarlssonSan/JuliaJs">GitHub page</a>
 <script>
 (function() {
     var presets = [ { 
@@ -166,4 +172,5 @@ Im:
     drawJulia();
 })();
 </script>
+</body>
 </html>
