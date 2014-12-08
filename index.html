@@ -123,13 +123,16 @@ Im:
     }
  
 
-   var xmin;
+    var xmin;
     var ymin;
     var xmax;
     var ymax;
     var xDelta;
     var yDelta;
     var fz = "z2";
+    var redArray = new Array(256);
+    var greenArray = new Array(256);
+    var blueArray = new Array(256);
     drawJulia = function() {
         xDelta = (xmax-xmin) / width;
         yDelta = (ymax-ymin) / height;
@@ -161,14 +164,64 @@ Im:
                     x = xtemp;
                     iteration = iteration + 1;
                 }
-                putPixel(Px, Py, 256-iteration, 256-iteration, 256-iteration, 255);
+                putPixel(Px, Py, redArray[iteration], greenArray[iteration], blueArray[iteration], 255);
             }
         }
         ctx.putImageData(id, 0, 0);
         console.log("xmin: " + xmin + " xmax: " + xmax + " ymin: " + ymin + " ymax: " + ymax);
     }
+
+    calculatePalette = function () {
+        // r g b
+        // 0 0 0
+        // 0 0 1
+        // 0 1 0
+        // 0 1 1
+        // 1 0 0
+        // 1 0 1
+        // 1 1 0
+        // 1 1 1
+        // 3 bits 2^3 = 8 combinations
+        // 256 / 8 = 32 steps for each transition
+        var r, g, b;
+        var xx = 0;
+        r = 0; g = 0; b = 0;
+        for(var combo = 0; combo < 8; combo++) {
+            for(var step = 0; step < 33; step++) {
+                if(combo % 2 === 1) {
+                    b = step * 8;
+                } else { 
+                    b = 256 - step * 8;
+                }
+                if(combo === 2 || combo === 6) {
+                    g = step * 8;
+                } else if(combo === 3 || combo === 0) {
+                      g = 256 - step * 8;
+                }
+                if(combo === 4) {
+                    r = step * 8;
+                } else if(combo === 0) {
+                      r = 256 - step * 8;
+                }
+                redArray[xx] = r;
+                greenArray[xx] = g;
+                blueArray[xx] = b;
+                /*
+                console.log(r + " " + g + " " + b);
+                putPixel(xx, 100,  r, g, b, 255);
+                putPixel(xx, 101,  r, g, b, 255);
+                putPixel(xx, 102,  r, g, b, 255);
+                putPixel(xx, 103,  r, g, b, 255);
+                putPixel(xx, 104,  r, g, b, 255);
+                putPixel(xx, 105,  r, g, b, 255);
+                */
+                xx++;
+            }
+        }
+    }
     document.getElementById("redrawButton").addEventListener("click", drawJulia, false);
     resetZoom();
+    calculatePalette();
     drawJulia();
 })();
 </script>
